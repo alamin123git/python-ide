@@ -4,15 +4,21 @@ on:
   workflow_dispatch:
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
+      - uses: actions/setup-python@v5
         with:
-          command: buildozer android debug
-          buildozer_version: stable
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses-dev cmake libffi-dev libssl-dev libltdl-dev build-essential
+          pip install --upgrade pip
+          pip install buildozer cython==0.29.36 virtualenv
+      - name: Build APK
+        run: buildozer -v android debug
       - uses: actions/upload-artifact@v4
         with:
           name: PythonIDE-apk
-          path: ${{ steps.buildozer.outputs.filename }}
+          path: bin/*.apk
